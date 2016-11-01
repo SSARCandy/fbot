@@ -10,6 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "facebook-chat-api": "^1.2.0",
-    "node-apod": "^1.6.4"
+    "node-apod": "^1.6.4",
+    "node-schedule": "^1.2.0"
   }
 }

@@ -2,39 +2,52 @@
 
 const APOD = require('node-apod');
 const apod = new APOD('WmtWE15aVRPb5XBcI7WEimtMyevbhKqNhJun8PgE');
+const schedule = require('node-schedule');
 const login = require("facebook-chat-api");
 const config = require("./config/my.js");
-const jerry326 = '100004062270676';//100000236577838;
+const jerry326 = '100002288107594';
+// const jerry326 = '100000236577838';
 
-// Create simple echo bot
+let apiCache;
+
 login({
-    email: config.user_email, 
+    email: config.user_email,
     password: config.user_password
-}, function callback (err, api) {
-    if(err) return console.error(err);
+}, function (err, api) {
+    if (err) return console.error(err);
+    apiCache = api;
 
-    api.listen(function callback(err, message) {
+    api.listen(function (err, message) {
+        if (!message.body) return;
         if (message.threadID === jerry326) {
             api.markAsRead(jerry326);
-            handleCommand(api, message);
+            handleCommand(message.body);
         }
     });
 });
 
-function handleCommand(api, msg) {
-    switch (msg.body.toLowerCase()) {
-        case 'apod':
-            apod.get({ LANG: "zh_tw" }, function(err, data) {
+function handleCommand(msg) {
+    if (!apiCache) return;
+
+    switch (msg.toLowerCase()) {
+        case '@apod':
+            apod.get({ LANG: "zh_tw" }, function (err, data) {
                 let res = {
                     url: data.url,
                     body: data.explanation
-                }
+                };
 
-                api.sendMessage(res, jerry326);          
+                apiCache.sendMessage(res, jerry326);
             });
             break;
+        case '@reminder':
+            apiCache.sendMessage('記得給許書軒 "20110616 月全食" 的照片。', jerry326);            
+            break;
         default:
-            api.sendMessage(msg.body, jerry326);            
             break;
     }
 }
+
+const j = schedule.scheduleJob('0 0 0 * * *', function(){
+    handleCommand('@reminder');
+});
