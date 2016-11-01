@@ -2,11 +2,10 @@
 
 const APOD = require('node-apod');
 const apod = new APOD('WmtWE15aVRPb5XBcI7WEimtMyevbhKqNhJun8PgE');
+const randomInt = require('random-int');
 const schedule = require('node-schedule');
 const login = require("facebook-chat-api");
 const config = require("./config/my.js");
-const jerry326 = '100002288107594';
-// const jerry326 = '100000236577838';
 
 let apiCache;
 
@@ -19,9 +18,18 @@ login({
 
     api.listen(function (err, message) {
         if (!message.body) return;
-        if (message.threadID === jerry326) {
-            api.markAsRead(jerry326);
-            handleCommand(message.body);
+        if (~config.special_user_id.indexOf(message.threadID)) {
+            api.markAsRead(message.threadID);
+            handleCommand(message);
+        } else {
+            api.markAsRead(message.threadID);
+            let end = api.sendTypingIndicator(message.threadID, function(err) {
+                if (err) console.error(err);
+            });
+            setTimeout(function() {
+                end();
+                api.sendMessage(config.dummy_msg[randomInt(config.dummy_msg.length - 1)], message.threadID);
+            }, randomInt(10000));
         }
     });
 });
@@ -29,7 +37,14 @@ login({
 function handleCommand(msg) {
     if (!apiCache) return;
 
-    switch (msg.toLowerCase()) {
+    switch (msg.body.toLowerCase()) {
+        case '?':
+            apiCache.sendMessage(
+                "可用指令:\n" +
+                "@apod - 今日 APOD\n" +
+                "@reminder - 備忘錄", msg.threadID);
+            break;
+
         case '@apod':
             apod.get({ LANG: "zh_tw" }, function (err, data) {
                 let res = {
@@ -37,17 +52,22 @@ function handleCommand(msg) {
                     body: data.explanation
                 };
 
-                apiCache.sendMessage(res, jerry326);
+                apiCache.sendMessage(res, msg.threadID);
             });
             break;
+
         case '@reminder':
-            apiCache.sendMessage('記得給許書軒 "20110616 月全食" 的照片。', jerry326);            
+            apiCache.sendMessage('記得給許書軒 "20110616 月全食" 的照片。', msg.threadID);
             break;
+
         default:
             break;
     }
 }
 
-const j = schedule.scheduleJob('0 0 0 * * *', function(){
-    handleCommand('@reminder');
+const j = schedule.scheduleJob('0 0 0 * * *', function () {
+    handleCommand({
+        body: '@reminder',
+        threadID: config.special_user_id[0]
+    });
 });

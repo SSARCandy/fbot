@@ -11,6 +11,7 @@
   "dependencies": {
     "facebook-chat-api": "^1.2.0",
     "node-apod": "^1.6.4",
-    "node-schedule": "^1.2.0"
+    "node-schedule": "^1.2.0",
+    "random-int": "^1.0.0"
   }
 }
