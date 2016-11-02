@@ -17,7 +17,7 @@ login({
     apiCache = api;
 
     api.listen(function (err, message) {
-        if (!message.body) return;
+        if (!message || !message.body) return;
         if (~config.special_user_id.indexOf(message.threadID)) {
             api.markAsRead(message.threadID);
             handleCommand(message);
@@ -70,7 +70,7 @@ function handleCommand(msg) {
     }
 }
 
-const j = schedule.scheduleJob('0 30 0 * * *', function () {
+const j = schedule.scheduleJob('0 35 0 * * *', function () {
     handleCommand({
         body: '@reminder',
         threadID: config.special_user_id[1]
