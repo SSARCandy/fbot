@@ -47,6 +47,10 @@ function handleCommand(msg) {
 
         case '@apod':
             apod.get({ LANG: "zh_tw" }, function (err, data) {
+                if (err) {
+                    apiCache.sendMessage('Chinese APOD not publish yet.', msg.threadID);
+                }
+
                 let res = {
                     url: data.url,
                     body: data.explanation
@@ -61,6 +65,7 @@ function handleCommand(msg) {
             break;
 
         default:
+            apiCache.sendMessage('Hi!', msg.threadID);
             break;
     }
 }
