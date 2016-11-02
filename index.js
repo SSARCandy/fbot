@@ -70,9 +70,9 @@ function handleCommand(msg) {
     }
 }
 
-const j = schedule.scheduleJob('0 0 0 * * *', function () {
+const j = schedule.scheduleJob('0 30 0 * * *', function () {
     handleCommand({
         body: '@reminder',
-        threadID: config.special_user_id[0]
+        threadID: config.special_user_id[1]
     });
 });
